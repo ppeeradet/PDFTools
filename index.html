@@ -7,280 +7,118 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap');
-
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-
 :root{
-  --blue:#1a8cff;
-  --blue-light:#e8f3ff;
-  --blue-mid:#5aaeff;
-  --blue-dark:#0060cc;
-  --bg:#f0f6ff;
-  --white:#ffffff;
-  --surface:#f7fbff;
-  --border:#c2dcff;
-  --border-strong:#7ab8ff;
-  --text:#0d2b5e;
-  --text-mid:#3a6096;
-  --text-light:#6e93c9;
-  --green:#00b87a;
-  --green-bg:#e6faf3;
-  --red:#e03535;
-  --red-bg:#fff0f0;
-  --radius:12px;
-  --shadow:0 2px 12px rgba(26,140,255,0.10);
+  --blue:#1a8cff;--blue-light:#e8f3ff;--blue-mid:#5aaeff;--blue-dark:#0060cc;
+  --bg:#f0f6ff;--white:#ffffff;--surface:#f7fbff;
+  --border:#c2dcff;--border-strong:#7ab8ff;
+  --text:#0d2b5e;--text-mid:#3a6096;--text-light:#6e93c9;
+  --green:#00b87a;--green-bg:#e6faf3;
+  --red:#e03535;--red-bg:#fff0f0;
+  --orange:#f5820a;--orange-bg:#fff5e6;
+  --radius:12px;--shadow:0 2px 12px rgba(26,140,255,0.10);
 }
-
-body{
-  background:var(--bg);
-  color:var(--text);
-  font-family:'Sarabun',sans-serif;
-  font-size:16px;
-  font-weight:400;
-  min-height:100vh;
-  padding:40px 20px 60px;
-}
-
+body{background:var(--bg);color:var(--text);font-family:'Sarabun',sans-serif;font-size:16px;font-weight:400;min-height:100vh;padding:40px 20px 60px}
 .wrap{max-width:600px;margin:0 auto}
 
-/* Header */
 .header{text-align:center;margin-bottom:36px}
-.header h1{
-  font-family:'IBM Plex Mono',monospace;
-  font-size:26px;
-  font-weight:500;
-  color:var(--blue-dark);
-  letter-spacing:-0.01em;
-}
-.header p{
-  font-size:15px;
-  color:var(--text-light);
-  margin-top:6px;
-}
+.header h1{font-family:'IBM Plex Mono',monospace;font-size:26px;font-weight:500;color:var(--blue-dark);letter-spacing:-0.01em}
+.header p{font-size:15px;color:var(--text-light);margin-top:6px}
 
-/* Tabs */
-.tabs{
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:8px;
-  margin-bottom:20px;
-}
-.tab-btn{
-  background:var(--white);
-  border:2px solid var(--border);
-  border-radius:var(--radius);
-  color:var(--text-mid);
-  font-family:'Sarabun',sans-serif;
-  font-size:16px;
-  font-weight:500;
-  padding:14px;
-  cursor:pointer;
-  transition:all 0.18s;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  gap:8px;
-}
+.tabs{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:20px}
+.tab-btn{background:var(--white);border:2px solid var(--border);border-radius:var(--radius);color:var(--text-mid);font-family:'Sarabun',sans-serif;font-size:16px;font-weight:500;padding:14px;cursor:pointer;transition:all 0.18s;display:flex;align-items:center;justify-content:center;gap:8px}
 .tab-btn:hover{border-color:var(--blue-mid);color:var(--blue)}
-.tab-btn.active{
-  background:var(--blue);
-  border-color:var(--blue);
-  color:#fff;
-  box-shadow:0 4px 16px rgba(26,140,255,0.25);
-}
+.tab-btn.active{background:var(--blue);border-color:var(--blue);color:#fff;box-shadow:0 4px 16px rgba(26,140,255,0.25)}
 
-/* Card panel */
-.panel{
-  background:var(--white);
-  border-radius:16px;
-  padding:28px;
-  box-shadow:var(--shadow);
-  border:1.5px solid var(--border);
-  display:none;
-  flex-direction:column;
-  gap:20px;
-}
+.panel{background:var(--white);border-radius:16px;padding:28px;box-shadow:var(--shadow);border:1.5px solid var(--border);display:none;flex-direction:column;gap:20px}
 .panel.active{display:flex}
 
-/* Drop zone */
-.dropzone{
-  border:2px dashed var(--border-strong);
-  border-radius:var(--radius);
-  background:var(--blue-light);
-  padding:36px 20px;
-  text-align:center;
-  cursor:pointer;
-  transition:all 0.18s;
-  position:relative;
-}
-.dropzone:hover,.dropzone.drag-over{
-  border-color:var(--blue);
-  background:#d6ecff;
-}
-.dropzone input[type=file]{
-  position:absolute;inset:0;
-  opacity:0;cursor:pointer;width:100%;height:100%;
-}
+.dropzone{border:2px dashed var(--border-strong);border-radius:var(--radius);background:var(--blue-light);padding:36px 20px;text-align:center;cursor:pointer;transition:all 0.18s;position:relative}
+.dropzone:hover,.dropzone.drag-over{border-color:var(--blue);background:#d6ecff}
+.dropzone input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
 .drop-icon{font-size:40px;margin-bottom:10px;display:block}
-.drop-label{
-  font-size:16px;
-  color:var(--text-mid);
-  font-weight:500;
-  pointer-events:none;
-}
-.drop-sub{
-  font-size:13px;
-  color:var(--text-light);
-  margin-top:4px;
-  pointer-events:none;
-}
+.drop-label{font-size:16px;color:var(--text-mid);font-weight:500;pointer-events:none}
+.drop-sub{font-size:13px;color:var(--text-light);margin-top:4px;pointer-events:none}
 
-/* File item */
 .file-list{display:flex;flex-direction:column;gap:6px}
-.file-item{
-  display:flex;align-items:center;gap:10px;
-  background:var(--surface);
-  border:1.5px solid var(--border);
-  border-radius:10px;
-  padding:12px 14px;
-  font-size:15px;
-}
-.file-icon{font-size:22px;flex-shrink:0}
+.file-item{display:flex;align-items:center;gap:10px;background:var(--surface);border:1.5px solid var(--border);border-radius:10px;padding:12px 14px;font-size:15px}
 .file-name{flex:1;color:var(--text);font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .file-meta{font-size:13px;color:var(--text-light);white-space:nowrap}
-.page-badge{
-  font-size:12px;
-  background:var(--blue-light);
-  color:var(--blue-dark);
-  font-weight:600;
-  padding:3px 10px;
-  border-radius:20px;
-  white-space:nowrap;
-}
-.remove-btn{
-  background:none;border:none;cursor:pointer;
-  color:var(--text-light);font-size:20px;
-  padding:0 2px;line-height:1;
-  transition:color 0.15s;
-}
+.page-badge{font-size:12px;background:var(--blue-light);color:var(--blue-dark);font-weight:600;padding:3px 10px;border-radius:20px;white-space:nowrap}
+.remove-btn{background:none;border:none;cursor:pointer;color:var(--text-light);font-size:20px;padding:0 2px;line-height:1;transition:color 0.15s}
 .remove-btn:hover{color:var(--red)}
 .drag-handle{color:var(--text-light);cursor:grab;font-size:18px;user-select:none}
-.reorder-tip{
-  font-size:13px;color:var(--text-light);
-  text-align:center;
-}
+.order-num{font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:500;min-width:26px;height:26px;background:var(--blue);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.reorder-tip{font-size:13px;color:var(--text-light);text-align:center}
 
-/* Section label */
-.sec-label{
-  font-size:13px;
-  font-weight:600;
-  color:var(--text-light);
-  letter-spacing:0.08em;
-  text-transform:uppercase;
-}
+.sec-label{font-size:13px;font-weight:600;color:var(--text-light);letter-spacing:0.08em;text-transform:uppercase}
 
-/* Split mode */
 .split-modes{display:flex;flex-direction:column;gap:8px}
-.split-mode-btn{
-  display:flex;align-items:center;gap:14px;
-  background:var(--surface);
-  border:2px solid var(--border);
-  border-radius:10px;
-  color:var(--text-mid);
-  font-family:'Sarabun',sans-serif;
-  font-size:16px;
-  font-weight:400;
-  padding:14px 16px;
-  cursor:pointer;text-align:left;
-  transition:all 0.18s;
-}
+.split-mode-btn{display:flex;align-items:center;gap:14px;background:var(--surface);border:2px solid var(--border);border-radius:10px;color:var(--text-mid);font-family:'Sarabun',sans-serif;font-size:16px;font-weight:400;padding:14px 16px;cursor:pointer;text-align:left;transition:all 0.18s}
 .split-mode-btn:hover{border-color:var(--blue-mid);color:var(--text)}
-.split-mode-btn.active{
-  border-color:var(--blue);
-  background:var(--blue-light);
-  color:var(--blue-dark);
-  font-weight:500;
-}
-.mode-dot{
-  width:18px;height:18px;flex-shrink:0;
-  border:2.5px solid var(--border-strong);
-  border-radius:50%;
-  transition:all 0.18s;
-}
-.split-mode-btn.active .mode-dot{
-  background:var(--blue);
-  border-color:var(--blue);
-}
-.mode-num{
-  font-family:'IBM Plex Mono',monospace;
-  font-size:12px;
-  color:var(--text-light);
-  margin-left:auto;
-}
+.split-mode-btn.active{border-color:var(--blue);background:var(--blue-light);color:var(--blue-dark);font-weight:500}
+.mode-dot{width:18px;height:18px;flex-shrink:0;border:2.5px solid var(--border-strong);border-radius:50%;transition:all 0.18s}
+.split-mode-btn.active .mode-dot{background:var(--blue);border-color:var(--blue)}
+.mode-num{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--text-light);margin-left:auto}
 .split-mode-btn.active .mode-num{color:var(--blue)}
 
-/* Input */
 .input-group{display:flex;flex-direction:column;gap:8px}
-.input-group label{
-  font-size:15px;font-weight:500;
-  color:var(--text);
-}
-input[type=number],input[type=text]{
-  background:var(--surface);
-  border:2px solid var(--border);
-  border-radius:10px;
-  color:var(--text);
-  font-family:'Sarabun',sans-serif;
-  font-size:16px;
-  padding:12px 14px;
-  width:100%;outline:none;
-  transition:border-color 0.18s;
-}
+.input-group label{font-size:15px;font-weight:500;color:var(--text)}
+input[type=number],input[type=text]{background:var(--surface);border:2px solid var(--border);border-radius:10px;color:var(--text);font-family:'Sarabun',sans-serif;font-size:16px;padding:12px 14px;width:100%;outline:none;transition:border-color 0.18s}
 input[type=number]:focus,input[type=text]:focus{border-color:var(--blue)}
 input::placeholder{color:var(--text-light)}
 input[type=number]::-webkit-inner-spin-button{opacity:0.4}
-.input-hint{
-  font-size:13px;color:var(--text-light);
-  margin-top:-4px;
-}
+.input-hint{font-size:13px;color:var(--text-light);margin-top:-4px}
 
-/* Divider */
+/* Input with suffix .pdf */
+.input-suffix-wrap{position:relative;display:flex;align-items:center}
+.input-suffix-wrap input{padding-right:52px}
+.input-suffix{position:absolute;right:14px;font-family:'IBM Plex Mono',monospace;font-size:13px;color:var(--text-light);pointer-events:none;user-select:none}
+
 .divider{height:1.5px;background:var(--border);border-radius:1px}
 
-/* Split input area */
 .split-area{display:none;flex-direction:column;gap:16px}
 .split-area.show{display:flex}
 
-/* Action btn */
-.action-btn{
-  background:var(--blue);
-  color:#fff;
-  border:none;
+/* Save box */
+.save-box{
+  background:var(--blue-light);
+  border:1.5px solid var(--border-strong);
   border-radius:var(--radius);
-  font-family:'Sarabun',sans-serif;
-  font-size:17px;
-  font-weight:600;
-  padding:16px 24px;
-  cursor:pointer;width:100%;
-  transition:all 0.18s;
-  margin-top:4px;
-  letter-spacing:0.01em;
-  box-shadow:0 4px 14px rgba(26,140,255,0.28);
+  padding:18px 20px;
+  display:flex;flex-direction:column;gap:14px;
 }
+.save-box-title{
+  display:flex;align-items:center;gap:8px;
+  font-size:15px;font-weight:600;color:var(--blue-dark);
+}
+.save-box-title span{font-size:18px}
+
+/* Split file name pair */
+.fname-pair{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+
+/* Download note */
+.dl-note{
+  background:var(--orange-bg);
+  border:1.5px solid #fcd09a;
+  border-radius:10px;
+  padding:12px 16px;
+  font-size:13px;
+  color:#7a4000;
+  display:flex;gap:10px;align-items:flex-start;
+  line-height:1.6;
+}
+.dl-note-icon{font-size:18px;flex-shrink:0;margin-top:1px}
+
+.action-btn{background:var(--blue);color:#fff;border:none;border-radius:var(--radius);font-family:'Sarabun',sans-serif;font-size:17px;font-weight:600;padding:16px 24px;cursor:pointer;width:100%;transition:all 0.18s;margin-top:4px;letter-spacing:0.01em;box-shadow:0 4px 14px rgba(26,140,255,0.28)}
 .action-btn:hover{background:var(--blue-dark);box-shadow:0 6px 20px rgba(26,140,255,0.36)}
 .action-btn:disabled{opacity:0.4;cursor:not-allowed;box-shadow:none}
 
-/* Progress */
 .prog-wrap{height:6px;background:var(--border);border-radius:3px;display:none;overflow:hidden}
 .prog-wrap.show{display:block}
 .prog-fill{height:100%;background:var(--blue);width:0%;transition:width 0.25s;border-radius:3px}
 
-/* Status */
-.status{
-  font-size:15px;padding:14px 16px;
-  border-radius:10px;display:none;
-  font-weight:500;
-}
+.status{font-size:15px;padding:14px 16px;border-radius:10px;display:none;font-weight:500}
 .status.info{display:block;background:var(--blue-light);color:var(--blue-dark)}
 .status.ok{display:block;background:var(--green-bg);color:#005a3c}
 .status.err{display:block;background:var(--red-bg);color:var(--red)}
@@ -299,7 +137,7 @@ input[type=number]::-webkit-inner-spin-button{opacity:0.4}
     <button class="tab-btn" onclick="switchTab('split')">✂️ แยกหน้า</button>
   </div>
 
-  <!-- MERGE -->
+  <!-- ══════════════ MERGE ══════════════ -->
   <div class="panel active" id="panel-merge">
 
     <div class="dropzone" id="merge-dropzone">
@@ -314,13 +152,33 @@ input[type=number]::-webkit-inner-spin-button{opacity:0.4}
       <p class="reorder-tip" id="merge-hint" style="display:none;margin-top:8px">⠿ ลากเพื่อเรียงลำดับ</p>
     </div>
 
+    <!-- Save settings -->
+    <div class="save-box" id="merge-save-box" style="display:none">
+      <div class="save-box-title"><span>💾</span> ตั้งชื่อไฟล์ที่บันทึก</div>
+      <div class="input-group">
+        <label>ชื่อไฟล์ผลลัพธ์</label>
+        <div class="input-suffix-wrap">
+          <input type="text" id="merge-outname" placeholder="merged" value="merged">
+          <span class="input-suffix">.pdf</span>
+        </div>
+        <p class="input-hint">ไม่ต้องใส่ .pdf — ระบบเติมให้อัตโนมัติ</p>
+      </div>
+      <div class="dl-note">
+        <span class="dl-note-icon">📁</span>
+        <div>
+          <b>โฟลเดอร์บันทึก</b> — ไฟล์จะถูกดาวน์โหลดไปยังโฟลเดอร์ Downloads ที่ตั้งค่าไว้ในเบราว์เซอร์<br>
+          ต้องการเปลี่ยน? ไปที่ <b>การตั้งค่าเบราว์เซอร์ → ดาวน์โหลด → ถามตำแหน่งบันทึกทุกครั้ง</b>
+          แล้วระบบจะถามทุกครั้งที่ดาวน์โหลด
+        </div>
+      </div>
+    </div>
+
     <div class="prog-wrap" id="merge-prog"><div class="prog-fill" id="merge-prog-fill"></div></div>
     <div class="status" id="merge-status"></div>
-
     <button class="action-btn" id="merge-btn" onclick="doMerge()" disabled>รวม PDF ทุกไฟล์</button>
   </div>
 
-  <!-- SPLIT -->
+  <!-- ══════════════ SPLIT ══════════════ -->
   <div class="panel" id="panel-split">
 
     <div class="dropzone" id="split-dropzone">
@@ -333,7 +191,7 @@ input[type=number]::-webkit-inner-spin-button{opacity:0.4}
     <div id="split-file-info" style="display:none">
       <div class="file-list">
         <div class="file-item">
-          <span class="file-icon">📄</span>
+          <span style="font-size:22px;flex-shrink:0">📄</span>
           <span class="file-name" id="split-fname">—</span>
           <span class="file-meta" id="split-fsize">—</span>
           <span class="page-badge" id="split-fpages">— หน้า</span>
@@ -367,25 +225,66 @@ input[type=number]::-webkit-inner-spin-button{opacity:0.4}
 
       <div class="divider"></div>
 
-      <!-- Mode 0 -->
+      <!-- Mode 0: split at page -->
       <div class="split-area show" id="sa-0">
         <div class="input-group">
           <label>แบ่ง ณ หน้าที่</label>
           <input type="number" id="s-at" min="1" placeholder="เช่น 5">
         </div>
         <p class="input-hint">📁 ไฟล์ 1 = หน้า 1 ถึงหน้าที่ระบุ &nbsp;|&nbsp; ไฟล์ 2 = หน้าที่เหลือ</p>
+        <!-- Save settings mode 0 -->
+        <div class="save-box">
+          <div class="save-box-title"><span>💾</span> ตั้งชื่อไฟล์ที่บันทึก</div>
+          <div class="fname-pair">
+            <div class="input-group">
+              <label>ชื่อไฟล์ที่ 1</label>
+              <div class="input-suffix-wrap">
+                <input type="text" id="s0-name1" placeholder="part1" value="part1">
+                <span class="input-suffix">.pdf</span>
+              </div>
+            </div>
+            <div class="input-group">
+              <label>ชื่อไฟล์ที่ 2</label>
+              <div class="input-suffix-wrap">
+                <input type="text" id="s0-name2" placeholder="part2" value="part2">
+                <span class="input-suffix">.pdf</span>
+              </div>
+            </div>
+          </div>
+          <p class="input-hint">💡 ชื่อจะใช้ตามที่ตั้งไว้ตรงๆ เช่น <b>part1.pdf</b> และ <b>part2.pdf</b></p>
+          <div class="dl-note">
+            <span class="dl-note-icon">📁</span>
+            <div>บันทึกไปที่โฟลเดอร์ Downloads ของเบราว์เซอร์ ต้องการเลือกที่บันทึกเอง ให้เปิด <b>การตั้งค่า → ดาวน์โหลด → ถามตำแหน่งบันทึกทุกครั้ง</b></div>
+          </div>
+        </div>
       </div>
 
-      <!-- Mode 1 -->
+      <!-- Mode 1: specific pages -->
       <div class="split-area" id="sa-1">
         <div class="input-group">
           <label>หน้าที่ต้องการ</label>
           <input type="text" id="s-list" placeholder="เช่น  1, 3, 5, 8">
         </div>
         <p class="input-hint">ใส่เลขหน้าคั่นด้วยจุลภาค</p>
+        <!-- Save settings mode 1 -->
+        <div class="save-box">
+          <div class="save-box-title"><span>💾</span> ตั้งชื่อไฟล์ที่บันทึก</div>
+          <div class="input-group">
+            <label>ชื่อไฟล์ผลลัพธ์</label>
+            <div class="input-suffix-wrap">
+              <input type="text" id="s1-name" placeholder="selected_pages">
+              <span class="input-suffix">.pdf</span>
+            </div>
+          </div>
+          <p class="input-hint">💡 ถ้าไม่ตั้งชื่อ จะใช้ชื่ออัตโนมัติจากเลขหน้าที่เลือก</p>
+          <div class="dl-note">
+            <span class="dl-note-icon">📁</span>
+            <div>บันทึกไปที่โฟลเดอร์ Downloads ของเบราว์เซอร์ ต้องการเลือกที่บันทึกเอง ให้เปิด <b>การตั้งค่า → ดาวน์โหลด → ถามตำแหน่งบันทึกทุกครั้ง</b></div>
+          </div>
+        </div>
       </div>
 
-      <!-- Mode 2 -->
+      <!-- Mode 2: range x-y -->
       <div class="split-area" id="sa-2">
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
           <div class="input-group">
@@ -398,13 +297,28 @@ input[type=number]::-webkit-inner-spin-button{opacity:0.4}
           </div>
         </div>
         <p class="input-hint">จะได้ไฟล์ใหม่ที่มีเฉพาะหน้า X ถึง Y</p>
+        <!-- Save settings mode 2 -->
+        <div class="save-box">
+          <div class="save-box-title"><span>💾</span> ตั้งชื่อไฟล์ที่บันทึก</div>
+          <div class="input-group">
+            <label>ชื่อไฟล์ผลลัพธ์</label>
+            <div class="input-suffix-wrap">
+              <input type="text" id="s2-name" placeholder="range_pages">
+              <span class="input-suffix">.pdf</span>
+            </div>
+          </div>
+          <p class="input-hint">💡 ถ้าไม่ตั้งชื่อ จะใช้ชื่ออัตโนมัติเช่น <span id="s2-auto-preview">filename_p1-10.pdf</span></p>
+          <div class="dl-note">
+            <span class="dl-note-icon">📁</span>
+            <div>บันทึกไปที่โฟลเดอร์ Downloads ของเบราว์เซอร์ ต้องการเลือกที่บันทึกเอง ให้เปิด <b>การตั้งค่า → ดาวน์โหลด → ถามตำแหน่งบันทึกทุกครั้ง</b></div>
+          </div>
+        </div>
       </div>
 
     </div>
 
     <div class="prog-wrap" id="split-prog"><div class="prog-fill" id="split-prog-fill"></div></div>
     <div class="status" id="split-status"></div>
-
     <button class="action-btn" id="split-btn" onclick="doSplit()" disabled style="display:none">แยก PDF</button>
   </div>
 
@@ -413,7 +327,7 @@ input[type=number]::-webkit-inner-spin-button{opacity:0.4}
 const {PDFDocument}=PDFLib;
 const MAX=500*1024*1024;
 let mergeFiles=[];
-let splitFile=null,splitPages=0,splitMode=0;
+let splitFile=null,splitPages=0,splitMode=0,splitBaseName='file';
 
 function switchTab(t){
   document.querySelectorAll('.tab-btn').forEach((b,i)=>b.classList.toggle('active',(i===0&&t==='merge')||(i===1&&t==='split')));
@@ -422,6 +336,7 @@ function switchTab(t){
 }
 
 function fmt(b){if(b<1048576)return(b/1024).toFixed(1)+' KB';return(b/1048576).toFixed(1)+' MB'}
+function clean(name,fallback){const v=(name||'').trim().replace(/\.pdf$/i,'').replace(/[\\/:*?"<>|]/g,'_');return v||fallback}
 
 function setStatus(id,cls,msg){const e=document.getElementById(id);e.className='status '+cls;e.textContent=msg}
 function setProgress(id,pct){
@@ -431,7 +346,7 @@ function setProgress(id,pct){
 function dl(bytes,name){
   const a=document.createElement('a');
   a.href=URL.createObjectURL(new Blob([bytes],{type:'application/pdf'}));
-  a.download=name;a.click();
+  a.download=name+'.pdf';a.click();
 }
 
 function setupDrop(id,fn){
@@ -445,6 +360,16 @@ setupDrop('split-dropzone',fs=>setSplit(fs[0]));
 document.getElementById('merge-input').addEventListener('change',e=>{addMerge([...e.target.files]);e.target.value=''});
 document.getElementById('split-input').addEventListener('change',e=>{setSplit(e.target.files[0]);e.target.value=''});
 
+// update auto-preview for mode 2
+function updateMode2Preview(){
+  const from=document.getElementById('s-from').value||'X';
+  const to=document.getElementById('s-to').value||'Y';
+  document.getElementById('s2-auto-preview').textContent=`${splitBaseName}_p${from}-${to}.pdf`;
+}
+document.getElementById('s-from').addEventListener('input',updateMode2Preview);
+document.getElementById('s-to').addEventListener('input',updateMode2Preview);
+
+// ─── MERGE ───────────────────────────────────────────
 function addMerge(files){
   for(const f of files){
     if(f.size>MAX){setStatus('merge-status','err',`"${f.name}" เกิน 500 MB`);return}
@@ -457,15 +382,18 @@ function renderMerge(){
   const list=document.getElementById('merge-file-list');
   const wrap=document.getElementById('merge-list-wrap');
   const hint=document.getElementById('merge-hint');
-  document.getElementById('merge-btn').disabled=mergeFiles.length<2;
-  if(!mergeFiles.length){wrap.style.display='none';return}
+  const saveBox=document.getElementById('merge-save-box');
+  const btn=document.getElementById('merge-btn');
+  btn.disabled=mergeFiles.length<2;
+  if(!mergeFiles.length){wrap.style.display='none';saveBox.style.display='none';return}
   wrap.style.display='block';
+  saveBox.style.display='flex';
   hint.style.display=mergeFiles.length>1?'block':'none';
   list.innerHTML=mergeFiles.map((f,i)=>`
     <div class="file-item" draggable="true" data-i="${i}"
       ondragstart="dragStart(event,${i})" ondragover="dragOver(event)" ondrop="dropItem(event,${i})">
+      <span class="order-num">${i+1}</span>
       <span class="drag-handle">⠿</span>
-      <span class="file-icon">📄</span>
       <span class="file-name">${f.name}</span>
       <span class="file-meta">${fmt(f.size)}</span>
       <button class="remove-btn" onclick="removeMerge(${i})">×</button>
@@ -482,6 +410,7 @@ function dropItem(e,i){
 
 async function doMerge(){
   if(mergeFiles.length<2){setStatus('merge-status','err','ต้องการอย่างน้อย 2 ไฟล์');return}
+  const outName=clean(document.getElementById('merge-outname').value,'merged');
   const btn=document.getElementById('merge-btn');btn.disabled=true;
   setStatus('merge-status','info','กำลังรวมไฟล์...');setProgress('merge-prog',10);
   try{
@@ -494,30 +423,37 @@ async function doMerge(){
     }
     const out=await merged.save();
     setProgress('merge-prog',100);
-    dl(out,'merged.pdf');
-    setStatus('merge-status','ok',`✅ สำเร็จ รวม ${mergeFiles.length} ไฟล์ → merged.pdf`);
+    dl(out,outName);
+    setStatus('merge-status','ok',`✅ สำเร็จ รวม ${mergeFiles.length} ไฟล์ → ${outName}.pdf`);
   }catch(err){setStatus('merge-status','err','❌ '+err.message)}
   btn.disabled=false;setTimeout(()=>setProgress('merge-prog',0),1200);
 }
 
+// ─── SPLIT ───────────────────────────────────────────
 async function setSplit(f){
   if(!f)return;
   if(f.size>MAX){setStatus('split-status','err','ไฟล์เกิน 500 MB');return}
   splitFile=f;
+  splitBaseName=f.name.replace(/\.pdf$/i,'');
   const doc=await PDFDocument.load(await f.arrayBuffer());
   splitPages=doc.getPageCount();
   document.getElementById('split-fname').textContent=f.name;
   document.getElementById('split-fsize').textContent=fmt(f.size);
   document.getElementById('split-fpages').textContent=splitPages+' หน้า';
   document.getElementById('split-file-info').style.display='block';
-  const opt=document.getElementById('split-options');opt.style.display='flex';
+  document.getElementById('split-options').style.display='flex';
   document.getElementById('split-btn').style.display='block';
   document.getElementById('split-btn').disabled=false;
   document.getElementById('split-dropzone').style.display='none';
   document.getElementById('split-status').className='status';
+  // pre-fill defaults
+  document.getElementById('s0-name1').value=splitBaseName+'_part1';
+  document.getElementById('s0-name2').value=splitBaseName+'_part2';
   document.getElementById('s-at').max=splitPages-1;
   document.getElementById('s-at').placeholder=`เช่น ${Math.ceil(splitPages/2)}`;
-  document.getElementById('s-to').max=splitPages;document.getElementById('s-to').placeholder=splitPages;
+  document.getElementById('s-to').max=splitPages;
+  document.getElementById('s-to').placeholder=splitPages;
+  updateMode2Preview();
 }
 function clearSplit(){
   splitFile=null;splitPages=0;
@@ -538,23 +474,25 @@ async function doSplit(){
   if(!splitFile)return;
   const btn=document.getElementById('split-btn');btn.disabled=true;
   setProgress('split-prog',20);
-  const base=splitFile.name.replace(/\.pdf$/i,'');
   try{
     const src=await PDFDocument.load(await splitFile.arrayBuffer());
     const total=src.getPageCount();
+
     if(splitMode===0){
       const at=parseInt(document.getElementById('s-at').value);
       if(!at||at<1||at>=total){setStatus('split-status','err',`ระบุหน้าระหว่าง 1 ถึง ${total-1}`);btn.disabled=false;setProgress('split-prog',0);return}
+      const n1=clean(document.getElementById('s0-name1').value,splitBaseName+'_part1');
+      const n2=clean(document.getElementById('s0-name2').value,splitBaseName+'_part2');
       setStatus('split-status','info','กำลังแยก...');
       const d1=await PDFDocument.create();
       (await d1.copyPages(src,[...Array(at).keys()])).forEach(p=>d1.addPage(p));
       const d2=await PDFDocument.create();
       (await d2.copyPages(src,[...Array(total-at).keys()].map(i=>i+at))).forEach(p=>d2.addPage(p));
       setProgress('split-prog',90);
-      dl(await d1.save(),`${base}_part1.pdf`);
-      setTimeout(()=>dl(d2.save().then(o=>o),`${base}_part2.pdf`),400);
-      const o2=await d2.save();dl(o2,`${base}_part2.pdf`);
-      setStatus('split-status','ok',`✅ ดาวน์โหลด 2 ไฟล์ · ไฟล์ 1: หน้า 1-${at} · ไฟล์ 2: หน้า ${at+1}-${total}`);
+      dl(await d1.save(),n1);
+      setTimeout(async()=>dl(await d2.save(),n2),600);
+      setStatus('split-status','ok',`✅ ดาวน์โหลด 2 ไฟล์\n→ ${n1}.pdf (หน้า 1-${at})\n→ ${n2}.pdf (หน้า ${at+1}-${total})`);
+
     }else if(splitMode===1){
       const str=document.getElementById('s-list').value;
       const idx=[];
@@ -565,24 +503,27 @@ async function doSplit(){
       }
       if(!idx.length){setStatus('split-status','err','ระบุหน้าด้วย');btn.disabled=false;setProgress('split-prog',0);return}
       const sorted=[...new Set(idx)].sort((a,b)=>a-b);
+      const autoName=splitBaseName+'_p'+sorted.map(i=>i+1).join('-');
+      const outName=clean(document.getElementById('s1-name').value,autoName);
       setStatus('split-status','info','กำลังแยก...');
       const nd=await PDFDocument.create();
       (await nd.copyPages(src,sorted)).forEach(p=>nd.addPage(p));
       setProgress('split-prog',90);
-      const label=sorted.map(i=>i+1).join('-');
-      dl(await nd.save(),`${base}_p${label}.pdf`);
-      setStatus('split-status','ok',`✅ สำเร็จ ได้หน้า: ${sorted.map(i=>i+1).join(', ')} (${sorted.length} หน้า)`);
+      dl(await nd.save(),outName);
+      setStatus('split-status','ok',`✅ สำเร็จ ได้หน้า: ${sorted.map(i=>i+1).join(', ')} (${sorted.length} หน้า)\n→ ${outName}.pdf`);
+
     }else{
       const from=parseInt(document.getElementById('s-from').value);
       const to=parseInt(document.getElementById('s-to').value);
       if(!from||!to||from<1||to>total||from>to){setStatus('split-status','err',`X และ Y ต้องอยู่ระหว่าง 1-${total} และ X ≤ Y`);btn.disabled=false;setProgress('split-prog',0);return}
+      const autoName=splitBaseName+`_p${from}-${to}`;
+      const outName=clean(document.getElementById('s2-name').value,autoName);
       setStatus('split-status','info','กำลังแยก...');
-      const idx=[...Array(to-from+1).keys()].map(i=>i+from-1);
       const nd=await PDFDocument.create();
-      (await nd.copyPages(src,idx)).forEach(p=>nd.addPage(p));
+      (await nd.copyPages(src,[...Array(to-from+1).keys()].map(i=>i+from-1))).forEach(p=>nd.addPage(p));
       setProgress('split-prog',90);
-      dl(await nd.save(),`${base}_p${from}-${to}.pdf`);
-      setStatus('split-status','ok',`✅ สำเร็จ ได้หน้า ${from} ถึง ${to} (${to-from+1} หน้า)`);
+      dl(await nd.save(),outName);
+      setStatus('split-status','ok',`✅ สำเร็จ หน้า ${from} ถึง ${to} (${to-from+1} หน้า)\n→ ${outName}.pdf`);
     }
     setProgress('split-prog',100);
   }catch(err){setStatus('split-status','err','❌ '+err.message)}
