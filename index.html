@@ -149,12 +149,13 @@ input[type=number]::-webkit-inner-spin-button{opacity:0.4}
 
   <div class="header">
     <h1>📄 PDF Tool</h1>
-    <p>รวมไฟล์ · แยกหน้า · ย่อขนาด · ออฟไลน์ · ไม่เกิน 500 MB</p>
+    <p>รวมไฟล์ · แยกหน้า · ตัดหน้า · ย่อขนาด · ออฟไลน์ · ไม่เกิน 500 MB</p>
   </div>
 
-  <div class="tabs">
-    <button class="tab-btn active" onclick="switchTab('merge')">🔗 รวม PDF</button>
-    <button class="tab-btn" onclick="switchTab('split')">✂️ แยกหน้า</button>
+  <div class="tabs" style="grid-template-columns:1fr 1fr 1fr 1fr">
+    <button class="tab-btn active" onclick="switchTab('merge')">🔗 รวม</button>
+    <button class="tab-btn" onclick="switchTab('split')">✂️ แยก</button>
+    <button class="tab-btn" onclick="switchTab('delete')">🗑️ ตัดหน้า</button>
     <button class="tab-btn" onclick="switchTab('compress')">📦 ย่อขนาด</button>
   </div>
 
@@ -390,6 +391,85 @@ input[type=number]::-webkit-inner-spin-button{opacity:0.4}
     <button class="action-btn" id="cmp-btn" onclick="doCompress()" disabled style="display:none">ย่อขนาด PDF</button>
   </div>
 
+  <!-- ══════════════ DELETE PAGES ══════════════ -->
+  <div class="panel" id="panel-delete">
+
+    <!-- How-to box -->
+    <div style="background:#f0f8ff;border:1.5px solid var(--border-strong);border-radius:var(--radius);padding:18px 20px;display:flex;flex-direction:column;gap:10px">
+      <div style="font-size:15px;font-weight:600;color:var(--blue-dark);display:flex;align-items:center;gap:8px">
+        <span>📖</span> วิธีใช้งาน
+      </div>
+      <div style="font-size:14px;color:var(--text-mid);line-height:1.9;display:flex;flex-direction:column;gap:4px">
+        <div>1️⃣ &nbsp;เลือกไฟล์ PDF ที่ต้องการตัดหน้า</div>
+        <div>2️⃣ &nbsp;ระบุหน้าที่ต้องการ<b>ลบออก</b> คั่นด้วยเครื่องหมาย <code style="background:#e0edff;padding:1px 6px;border-radius:4px;font-family:'IBM Plex Mono',monospace">,</code></div>
+        <div>3️⃣ &nbsp;ตั้งชื่อไฟล์ผลลัพธ์ แล้วกด <b>ตัดหน้าและบันทึก</b></div>
+      </div>
+      <div style="background:#fff8e0;border-radius:8px;padding:10px 14px;font-size:13px;color:#7a5300;line-height:1.7">
+        <b>ตัวอย่าง:</b><br>
+        ใส่ <code style="background:#ffeeba;padding:1px 5px;border-radius:3px;font-family:'IBM Plex Mono',monospace">1, 3, 5</code> → ลบหน้า 1, 3 และ 5 ออก เหลือหน้าที่เหลือทั้งหมด<br>
+        ใส่ <code style="background:#ffeeba;padding:1px 5px;border-radius:3px;font-family:'IBM Plex Mono',monospace">2, 4, 7, 10</code> → ลบหน้า 2, 4, 7 และ 10 ออก<br>
+        <span style="color:#b05a00">⚠️ หน้าที่ระบุจะถูก<u>ลบออกถาวร</u>จากไฟล์ใหม่ — ไฟล์ต้นฉบับยังอยู่ครบ</span>
+      </div>
+    </div>
+
+    <!-- Drop zone -->
+    <div class="dropzone" id="del-dropzone">
+      <input type="file" id="del-input" accept=".pdf">
+      <span class="drop-icon">📄</span>
+      <div class="drop-label">คลิกหรือลากไฟล์ PDF มาวาง</div>
+      <div class="drop-sub">เลือก 1 ไฟล์</div>
+    </div>
+
+    <!-- File info -->
+    <div id="del-file-info" style="display:none">
+      <div class="file-list">
+        <div class="file-item">
+          <span style="font-size:22px;flex-shrink:0">📄</span>
+          <span class="file-name" id="del-fname">—</span>
+          <span class="file-meta" id="del-fsize">—</span>
+          <span class="page-badge" id="del-fpages">— หน้า</span>
+          <button class="remove-btn" onclick="clearDelete()">×</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Options -->
+    <div id="del-options" style="display:none;flex-direction:column;gap:16px">
+
+      <div class="input-group">
+        <label>หน้าที่ต้องการ<span style="color:var(--red);font-weight:700">ลบออก</span></label>
+        <input type="text" id="del-pages" placeholder="เช่น  1, 3, 5, 10">
+        <p class="input-hint">คั่นแต่ละหน้าด้วยเครื่องหมาย <b>,</b> &nbsp;·&nbsp; หน้าที่ระบุจะหายออกจากไฟล์ผลลัพธ์</p>
+      </div>
+
+      <!-- Preview box -->
+      <div id="del-preview-box" style="display:none;background:#fff0f0;border:1.5px solid #ffb3b3;border-radius:10px;padding:14px 16px;font-size:13px;color:#6b0000;line-height:1.8">
+        <b style="font-size:14px">🗑️ จะลบหน้า:</b> <span id="del-preview-pages" style="font-family:'IBM Plex Mono',monospace;color:var(--red)">—</span><br>
+        <b>📄 หน้าที่เหลือ:</b> <span id="del-preview-remain" style="font-family:'IBM Plex Mono',monospace;color:var(--green)">—</span> หน้า
+      </div>
+
+      <div class="save-box">
+        <div class="save-box-title"><span>💾</span> ตั้งชื่อไฟล์ที่บันทึก</div>
+        <div class="input-group">
+          <label>ชื่อไฟล์ผลลัพธ์</label>
+          <div class="input-suffix-wrap">
+            <input type="text" id="del-outname" placeholder="deleted_pages">
+            <span class="input-suffix">.pdf</span>
+          </div>
+          <p class="input-hint">💡 ถ้าไม่ตั้งชื่อ จะใช้ชื่อเดิม + <b>_edited</b></p>
+        </div>
+        <div class="dl-note">
+          <span class="dl-note-icon">📁</span>
+          <div>บันทึกที่โฟลเดอร์ Downloads ของเบราว์เซอร์ เปิด <b>การตั้งค่า → ดาวน์โหลด → ถามตำแหน่งบันทึกทุกครั้ง</b> เพื่อเลือกที่บันทึกเอง</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="prog-wrap" id="del-prog"><div class="prog-fill" id="del-prog-fill"></div></div>
+    <div class="status" id="del-status"></div>
+    <button class="action-btn" id="del-btn" onclick="doDelete()" disabled style="display:none">🗑️ ตัดหน้าและบันทึก</button>
+  </div>
+
 </div>
 <script>
 pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
@@ -410,7 +490,7 @@ let cmpFile=null,cmpBaseName='file';
 
 // ── Tab ──
 function switchTab(t){
-  const ids=['merge','split','compress'];
+  const ids=['merge','split','delete','compress'];
   document.querySelectorAll('.tab-btn').forEach((b,i)=>b.classList.toggle('active',ids[i]===t));
   ids.forEach(id=>document.getElementById('panel-'+id).classList.toggle('active',id===t));
 }
@@ -697,6 +777,102 @@ async function doCompress(){
   }
   btn.disabled=false;
   setTimeout(()=>setProgress('cmp',0),1500);
+}
+
+// ══════════ DELETE PAGES ══════════
+let delFile=null,delTotalPages=0,delBaseName='file';
+
+setupDrop('del-dropzone',fs=>setDelFile(fs[0]));
+document.getElementById('del-input').addEventListener('change',e=>{setDelFile(e.target.files[0]);e.target.value=''});
+
+// live preview as user types page numbers
+document.getElementById('del-pages').addEventListener('input',updateDelPreview);
+
+async function setDelFile(f){
+  if(!f)return;
+  if(f.size>MAX){setStatus('del-status','err','ไฟล์เกิน 500 MB');return}
+  delFile=f;delBaseName=f.name.replace(/\.pdf$/i,'');
+  const doc=await PDFDocument.load(await f.arrayBuffer());
+  delTotalPages=doc.getPageCount();
+  document.getElementById('del-fname').textContent=f.name;
+  document.getElementById('del-fsize').textContent=fmt(f.size);
+  document.getElementById('del-fpages').textContent=delTotalPages+' หน้า';
+  document.getElementById('del-file-info').style.display='block';
+  document.getElementById('del-options').style.display='flex';
+  document.getElementById('del-btn').style.display='block';
+  document.getElementById('del-btn').disabled=false;
+  document.getElementById('del-dropzone').style.display='none';
+  document.getElementById('del-status').className='status';
+  document.getElementById('del-outname').value=delBaseName+'_edited';
+  document.getElementById('del-pages').value='';
+  document.getElementById('del-preview-box').style.display='none';
+}
+function clearDelete(){
+  delFile=null;delTotalPages=0;
+  document.getElementById('del-file-info').style.display='none';
+  document.getElementById('del-options').style.display='none';
+  document.getElementById('del-btn').style.display='none';
+  document.getElementById('del-dropzone').style.display='block';
+  document.getElementById('del-status').className='status';
+  document.getElementById('del-preview-box').style.display='none';
+}
+
+function parseDelPages(str,total){
+  const set=new Set();
+  for(const p of str.split(',').map(s=>s.trim()).filter(Boolean)){
+    const n=parseInt(p);
+    if(isNaN(n)||n<1||n>total)return null;
+    set.add(n);
+  }
+  return set;
+}
+
+function updateDelPreview(){
+  const str=document.getElementById('del-pages').value;
+  if(!str.trim()||!delTotalPages){document.getElementById('del-preview-box').style.display='none';return}
+  const toDelete=parseDelPages(str,delTotalPages);
+  if(!toDelete){document.getElementById('del-preview-box').style.display='none';return}
+  const remaining=delTotalPages-toDelete.size;
+  const sortedDel=[...toDelete].sort((a,b)=>a-b);
+  document.getElementById('del-preview-pages').textContent='หน้า '+sortedDel.join(', ')+` (${toDelete.size} หน้า)`;
+  document.getElementById('del-preview-remain').textContent=remaining;
+  document.getElementById('del-preview-box').style.display='block';
+}
+
+async function doDelete(){
+  if(!delFile)return;
+  const str=document.getElementById('del-pages').value;
+  if(!str.trim()){setStatus('del-status','err','ระบุหน้าที่ต้องการลบด้วย');return}
+  const toDelete=parseDelPages(str,delTotalPages);
+  if(!toDelete){setStatus('del-status','err',`เลขหน้าไม่ถูกต้อง — ต้องอยู่ระหว่าง 1 ถึง ${delTotalPages}`);return}
+  if(toDelete.size>=delTotalPages){setStatus('del-status','err','ไม่สามารถลบทุกหน้าได้ — ต้องเหลืออย่างน้อย 1 หน้า');return}
+
+  const outName=clean(document.getElementById('del-outname').value,delBaseName+'_edited');
+  const btn=document.getElementById('del-btn');btn.disabled=true;
+  setStatus('del-status','info','กำลังประมวลผล...');setProgress('del',20);
+
+  try{
+    const src=await PDFDocument.load(await delFile.arrayBuffer());
+    const total=src.getPageCount();
+    // build keep indices (0-based)
+    const keepIdx=[];
+    for(let i=0;i<total;i++){if(!toDelete.has(i+1))keepIdx.push(i);}
+
+    const newDoc=await PDFDocument.create();
+    const pages=await newDoc.copyPages(src,keepIdx);
+    pages.forEach(p=>newDoc.addPage(p));
+    setProgress('del',80);
+    const out=await newDoc.save();
+    setProgress('del',100);
+    dl(out,outName);
+
+    const sortedDel=[...toDelete].sort((a,b)=>a-b);
+    setStatus('del-status','ok',
+      `✅ สำเร็จ · ลบหน้า ${sortedDel.join(', ')} ออก\n` +
+      `เหลือ ${keepIdx.length} หน้า → ${outName}.pdf`
+    );
+  }catch(err){setStatus('del-status','err','❌ '+err.message)}
+  btn.disabled=false;setTimeout(()=>setProgress('del',0),1500);
 }
 </script>
 </body>

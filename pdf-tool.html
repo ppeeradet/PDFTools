@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>PDF Tool</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap');
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -16,6 +17,7 @@
   --green:#00b87a;--green-bg:#e6faf3;
   --red:#e03535;--red-bg:#fff0f0;
   --orange:#f5820a;--orange-bg:#fff5e6;
+  --purple:#7c3aed;--purple-light:#f3eeff;
   --radius:12px;--shadow:0 2px 12px rgba(26,140,255,0.10);
 }
 body{background:var(--bg);color:var(--text);font-family:'Sarabun',sans-serif;font-size:16px;font-weight:400;min-height:100vh;padding:40px 20px 60px}
@@ -25,8 +27,8 @@ body{background:var(--bg);color:var(--text);font-family:'Sarabun',sans-serif;fon
 .header h1{font-family:'IBM Plex Mono',monospace;font-size:26px;font-weight:500;color:var(--blue-dark);letter-spacing:-0.01em}
 .header p{font-size:15px;color:var(--text-light);margin-top:6px}
 
-.tabs{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:20px}
-.tab-btn{background:var(--white);border:2px solid var(--border);border-radius:var(--radius);color:var(--text-mid);font-family:'Sarabun',sans-serif;font-size:16px;font-weight:500;padding:14px;cursor:pointer;transition:all 0.18s;display:flex;align-items:center;justify-content:center;gap:8px}
+.tabs{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:20px}
+.tab-btn{background:var(--white);border:2px solid var(--border);border-radius:var(--radius);color:var(--text-mid);font-family:'Sarabun',sans-serif;font-size:15px;font-weight:500;padding:13px 8px;cursor:pointer;transition:all 0.18s;display:flex;align-items:center;justify-content:center;gap:6px}
 .tab-btn:hover{border-color:var(--blue-mid);color:var(--blue)}
 .tab-btn.active{background:var(--blue);border-color:var(--blue);color:#fff;box-shadow:0 4px 16px rgba(26,140,255,0.25)}
 
@@ -70,44 +72,62 @@ input::placeholder{color:var(--text-light)}
 input[type=number]::-webkit-inner-spin-button{opacity:0.4}
 .input-hint{font-size:13px;color:var(--text-light);margin-top:-4px}
 
-/* Input with suffix .pdf */
 .input-suffix-wrap{position:relative;display:flex;align-items:center}
 .input-suffix-wrap input{padding-right:52px}
 .input-suffix{position:absolute;right:14px;font-family:'IBM Plex Mono',monospace;font-size:13px;color:var(--text-light);pointer-events:none;user-select:none}
 
 .divider{height:1.5px;background:var(--border);border-radius:1px}
-
 .split-area{display:none;flex-direction:column;gap:16px}
 .split-area.show{display:flex}
 
+/* ── Compress levels ── */
+.compress-levels{display:flex;flex-direction:column;gap:8px}
+.level-btn{
+  display:flex;align-items:center;gap:14px;
+  background:var(--surface);border:2px solid var(--border);border-radius:10px;
+  color:var(--text-mid);font-family:'Sarabun',sans-serif;font-size:16px;font-weight:400;
+  padding:14px 16px;cursor:pointer;text-align:left;transition:all 0.18s;
+}
+.level-btn:hover{border-color:var(--blue-mid);color:var(--text)}
+.level-btn.active{border-color:var(--blue);background:var(--blue-light);color:var(--blue-dark);font-weight:500}
+.level-dot{width:18px;height:18px;flex-shrink:0;border:2.5px solid var(--border-strong);border-radius:50%;transition:all 0.18s}
+.level-btn.active .level-dot{background:var(--blue);border-color:var(--blue)}
+.level-info{display:flex;flex-direction:column;gap:2px;flex:1}
+.level-name{font-size:16px;font-weight:500}
+.level-desc{font-size:12px;color:var(--text-light)}
+.level-btn.active .level-desc{color:var(--blue-mid)}
+.level-badge{
+  font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:500;
+  padding:3px 8px;border-radius:6px;white-space:nowrap;
+}
+.badge-low{background:#e6fff5;color:#006b3c}
+.badge-mid{background:#fff8e0;color:#7a5300}
+.badge-hi{background:#ffe8e8;color:#8a0000}
+
+/* Progress with page counter */
+.prog-label{font-size:13px;color:var(--text-mid);font-family:'IBM Plex Mono',monospace;margin-bottom:4px;display:none}
+.prog-label.show{display:block}
+
+/* Size comparison */
+.size-compare{
+  display:none;flex-direction:column;gap:8px;
+  background:var(--green-bg);border:1.5px solid #a3e8c8;
+  border-radius:10px;padding:16px;
+}
+.size-compare.show{display:flex}
+.size-row{display:flex;justify-content:space-between;align-items:center;font-size:14px}
+.size-label{color:var(--text-mid)}
+.size-val{font-family:'IBM Plex Mono',monospace;font-weight:500;color:var(--text)}
+.size-val.green{color:var(--green)}
+.size-bar-wrap{height:8px;background:var(--border);border-radius:4px;overflow:hidden}
+.size-bar-fill{height:100%;background:var(--green);border-radius:4px;transition:width 0.6s}
+
 /* Save box */
-.save-box{
-  background:var(--blue-light);
-  border:1.5px solid var(--border-strong);
-  border-radius:var(--radius);
-  padding:18px 20px;
-  display:flex;flex-direction:column;gap:14px;
-}
-.save-box-title{
-  display:flex;align-items:center;gap:8px;
-  font-size:15px;font-weight:600;color:var(--blue-dark);
-}
+.save-box{background:var(--blue-light);border:1.5px solid var(--border-strong);border-radius:var(--radius);padding:18px 20px;display:flex;flex-direction:column;gap:14px}
+.save-box-title{display:flex;align-items:center;gap:8px;font-size:15px;font-weight:600;color:var(--blue-dark)}
 .save-box-title span{font-size:18px}
-
-/* Split file name pair */
 .fname-pair{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-
-/* Download note */
-.dl-note{
-  background:var(--orange-bg);
-  border:1.5px solid #fcd09a;
-  border-radius:10px;
-  padding:12px 16px;
-  font-size:13px;
-  color:#7a4000;
-  display:flex;gap:10px;align-items:flex-start;
-  line-height:1.6;
-}
+.dl-note{background:var(--orange-bg);border:1.5px solid #fcd09a;border-radius:10px;padding:12px 16px;font-size:13px;color:#7a4000;display:flex;gap:10px;align-items:flex-start;line-height:1.6}
 .dl-note-icon{font-size:18px;flex-shrink:0;margin-top:1px}
 
 .action-btn{background:var(--blue);color:#fff;border:none;border-radius:var(--radius);font-family:'Sarabun',sans-serif;font-size:17px;font-weight:600;padding:16px 24px;cursor:pointer;width:100%;transition:all 0.18s;margin-top:4px;letter-spacing:0.01em;box-shadow:0 4px 14px rgba(26,140,255,0.28)}
@@ -118,7 +138,7 @@ input[type=number]::-webkit-inner-spin-button{opacity:0.4}
 .prog-wrap.show{display:block}
 .prog-fill{height:100%;background:var(--blue);width:0%;transition:width 0.25s;border-radius:3px}
 
-.status{font-size:15px;padding:14px 16px;border-radius:10px;display:none;font-weight:500}
+.status{font-size:15px;padding:14px 16px;border-radius:10px;display:none;font-weight:500;white-space:pre-line}
 .status.info{display:block;background:var(--blue-light);color:var(--blue-dark)}
 .status.ok{display:block;background:var(--green-bg);color:#005a3c}
 .status.err{display:block;background:var(--red-bg);color:var(--red)}
@@ -129,30 +149,28 @@ input[type=number]::-webkit-inner-spin-button{opacity:0.4}
 
   <div class="header">
     <h1>📄 PDF Tool</h1>
-    <p>รวมไฟล์ · แยกหน้า · ใช้งานออฟไลน์ · ไม่เกิน 500 MB</p>
+    <p>รวมไฟล์ · แยกหน้า · ตัดหน้า · ย่อขนาด · ออฟไลน์ · ไม่เกิน 500 MB</p>
   </div>
 
-  <div class="tabs">
-    <button class="tab-btn active" onclick="switchTab('merge')">🔗 รวม PDF</button>
-    <button class="tab-btn" onclick="switchTab('split')">✂️ แยกหน้า</button>
+  <div class="tabs" style="grid-template-columns:1fr 1fr 1fr 1fr">
+    <button class="tab-btn active" onclick="switchTab('merge')">🔗 รวม</button>
+    <button class="tab-btn" onclick="switchTab('split')">✂️ แยก</button>
+    <button class="tab-btn" onclick="switchTab('delete')">🗑️ ตัดหน้า</button>
+    <button class="tab-btn" onclick="switchTab('compress')">📦 ย่อขนาด</button>
   </div>
 
   <!-- ══════════════ MERGE ══════════════ -->
   <div class="panel active" id="panel-merge">
-
     <div class="dropzone" id="merge-dropzone">
       <input type="file" id="merge-input" accept=".pdf" multiple>
       <span class="drop-icon">📂</span>
       <div class="drop-label">คลิกหรือลากไฟล์ PDF มาวาง</div>
       <div class="drop-sub">เลือกได้หลายไฟล์พร้อมกัน</div>
     </div>
-
     <div id="merge-list-wrap" style="display:none">
       <div class="file-list" id="merge-file-list"></div>
       <p class="reorder-tip" id="merge-hint" style="display:none;margin-top:8px">⠿ ลากเพื่อเรียงลำดับ</p>
     </div>
-
-    <!-- Save settings -->
     <div class="save-box" id="merge-save-box" style="display:none">
       <div class="save-box-title"><span>💾</span> ตั้งชื่อไฟล์ที่บันทึก</div>
       <div class="input-group">
@@ -165,14 +183,9 @@ input[type=number]::-webkit-inner-spin-button{opacity:0.4}
       </div>
       <div class="dl-note">
         <span class="dl-note-icon">📁</span>
-        <div>
-          <b>โฟลเดอร์บันทึก</b> — ไฟล์จะถูกดาวน์โหลดไปยังโฟลเดอร์ Downloads ที่ตั้งค่าไว้ในเบราว์เซอร์<br>
-          ต้องการเปลี่ยน? ไปที่ <b>การตั้งค่าเบราว์เซอร์ → ดาวน์โหลด → ถามตำแหน่งบันทึกทุกครั้ง</b>
-          แล้วระบบจะถามทุกครั้งที่ดาวน์โหลด
-        </div>
+        <div>ไฟล์บันทึกที่โฟลเดอร์ Downloads ของเบราว์เซอร์ ต้องการเลือกที่บันทึกเอง ให้เปิด <b>การตั้งค่า → ดาวน์โหลด → ถามตำแหน่งบันทึกทุกครั้ง</b></div>
       </div>
     </div>
-
     <div class="prog-wrap" id="merge-prog"><div class="prog-fill" id="merge-prog-fill"></div></div>
     <div class="status" id="merge-status"></div>
     <button class="action-btn" id="merge-btn" onclick="doMerge()" disabled>รวม PDF ทุกไฟล์</button>
@@ -180,14 +193,12 @@ input[type=number]::-webkit-inner-spin-button{opacity:0.4}
 
   <!-- ══════════════ SPLIT ══════════════ -->
   <div class="panel" id="panel-split">
-
     <div class="dropzone" id="split-dropzone">
       <input type="file" id="split-input" accept=".pdf">
       <span class="drop-icon">📄</span>
       <div class="drop-label">คลิกหรือลากไฟล์ PDF มาวาง</div>
       <div class="drop-sub">เลือก 1 ไฟล์</div>
     </div>
-
     <div id="split-file-info" style="display:none">
       <div class="file-list">
         <div class="file-item">
@@ -199,149 +210,301 @@ input[type=number]::-webkit-inner-spin-button{opacity:0.4}
         </div>
       </div>
     </div>
-
     <div id="split-options" style="display:none;flex-direction:column;gap:20px">
-
       <div>
         <p class="sec-label" style="margin-bottom:10px">เลือกโหมดแยก</p>
         <div class="split-modes">
           <button class="split-mode-btn active" onclick="pickMode(0,this)">
-            <span class="mode-dot"></span>
-            แบ่งเป็น 2 ไฟล์ ณ หน้าที่ระบุ
-            <span class="mode-num">01</span>
+            <span class="mode-dot"></span>แบ่งเป็น 2 ไฟล์ ณ หน้าที่ระบุ<span class="mode-num">01</span>
           </button>
           <button class="split-mode-btn" onclick="pickMode(1,this)">
-            <span class="mode-dot"></span>
-            เอาเฉพาะหน้าที่ระบุ เช่น 1, 3, 5
-            <span class="mode-num">02</span>
+            <span class="mode-dot"></span>เอาเฉพาะหน้าที่ระบุ เช่น 1, 3, 5<span class="mode-num">02</span>
           </button>
           <button class="split-mode-btn" onclick="pickMode(2,this)">
-            <span class="mode-dot"></span>
-            เอาเฉพาะหน้า X ถึง Y
-            <span class="mode-num">03</span>
+            <span class="mode-dot"></span>เอาเฉพาะหน้า X ถึง Y<span class="mode-num">03</span>
           </button>
         </div>
       </div>
-
       <div class="divider"></div>
-
-      <!-- Mode 0: split at page -->
+      <!-- Mode 0 -->
       <div class="split-area show" id="sa-0">
         <div class="input-group">
           <label>แบ่ง ณ หน้าที่</label>
           <input type="number" id="s-at" min="1" placeholder="เช่น 5">
         </div>
         <p class="input-hint">📁 ไฟล์ 1 = หน้า 1 ถึงหน้าที่ระบุ &nbsp;|&nbsp; ไฟล์ 2 = หน้าที่เหลือ</p>
-        <!-- Save settings mode 0 -->
         <div class="save-box">
           <div class="save-box-title"><span>💾</span> ตั้งชื่อไฟล์ที่บันทึก</div>
           <div class="fname-pair">
             <div class="input-group">
               <label>ชื่อไฟล์ที่ 1</label>
-              <div class="input-suffix-wrap">
-                <input type="text" id="s0-name1" placeholder="part1" value="part1">
-                <span class="input-suffix">.pdf</span>
-              </div>
+              <div class="input-suffix-wrap"><input type="text" id="s0-name1" placeholder="part1" value="part1"><span class="input-suffix">.pdf</span></div>
             </div>
             <div class="input-group">
               <label>ชื่อไฟล์ที่ 2</label>
-              <div class="input-suffix-wrap">
-                <input type="text" id="s0-name2" placeholder="part2" value="part2">
-                <span class="input-suffix">.pdf</span>
-              </div>
+              <div class="input-suffix-wrap"><input type="text" id="s0-name2" placeholder="part2" value="part2"><span class="input-suffix">.pdf</span></div>
             </div>
           </div>
-          <p class="input-hint">💡 ชื่อจะใช้ตามที่ตั้งไว้ตรงๆ เช่น <b>part1.pdf</b> และ <b>part2.pdf</b></p>
-          <div class="dl-note">
-            <span class="dl-note-icon">📁</span>
-            <div>บันทึกไปที่โฟลเดอร์ Downloads ของเบราว์เซอร์ ต้องการเลือกที่บันทึกเอง ให้เปิด <b>การตั้งค่า → ดาวน์โหลด → ถามตำแหน่งบันทึกทุกครั้ง</b></div>
-          </div>
+          <div class="dl-note"><span class="dl-note-icon">📁</span><div>บันทึกที่โฟลเดอร์ Downloads เปิด <b>การตั้งค่า → ดาวน์โหลด → ถามตำแหน่งบันทึกทุกครั้ง</b> เพื่อเลือกที่บันทึกเอง</div></div>
         </div>
       </div>
-
-      <!-- Mode 1: specific pages -->
+      <!-- Mode 1 -->
       <div class="split-area" id="sa-1">
         <div class="input-group">
           <label>หน้าที่ต้องการ</label>
           <input type="text" id="s-list" placeholder="เช่น  1, 3, 5, 8">
         </div>
         <p class="input-hint">ใส่เลขหน้าคั่นด้วยจุลภาค</p>
-        <!-- Save settings mode 1 -->
         <div class="save-box">
           <div class="save-box-title"><span>💾</span> ตั้งชื่อไฟล์ที่บันทึก</div>
           <div class="input-group">
             <label>ชื่อไฟล์ผลลัพธ์</label>
-            <div class="input-suffix-wrap">
-              <input type="text" id="s1-name" placeholder="selected_pages">
-              <span class="input-suffix">.pdf</span>
-            </div>
+            <div class="input-suffix-wrap"><input type="text" id="s1-name" placeholder="selected_pages"><span class="input-suffix">.pdf</span></div>
           </div>
           <p class="input-hint">💡 ถ้าไม่ตั้งชื่อ จะใช้ชื่ออัตโนมัติจากเลขหน้าที่เลือก</p>
-          <div class="dl-note">
-            <span class="dl-note-icon">📁</span>
-            <div>บันทึกไปที่โฟลเดอร์ Downloads ของเบราว์เซอร์ ต้องการเลือกที่บันทึกเอง ให้เปิด <b>การตั้งค่า → ดาวน์โหลด → ถามตำแหน่งบันทึกทุกครั้ง</b></div>
-          </div>
+          <div class="dl-note"><span class="dl-note-icon">📁</span><div>บันทึกที่โฟลเดอร์ Downloads เปิด <b>การตั้งค่า → ดาวน์โหลด → ถามตำแหน่งบันทึกทุกครั้ง</b> เพื่อเลือกที่บันทึกเอง</div></div>
         </div>
       </div>
-
-      <!-- Mode 2: range x-y -->
+      <!-- Mode 2 -->
       <div class="split-area" id="sa-2">
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-          <div class="input-group">
-            <label>หน้าเริ่มต้น (X)</label>
-            <input type="number" id="s-from" min="1" placeholder="1">
-          </div>
-          <div class="input-group">
-            <label>หน้าสุดท้าย (Y)</label>
-            <input type="number" id="s-to" min="1" placeholder="10">
-          </div>
+          <div class="input-group"><label>หน้าเริ่มต้น (X)</label><input type="number" id="s-from" min="1" placeholder="1"></div>
+          <div class="input-group"><label>หน้าสุดท้าย (Y)</label><input type="number" id="s-to" min="1" placeholder="10"></div>
         </div>
         <p class="input-hint">จะได้ไฟล์ใหม่ที่มีเฉพาะหน้า X ถึง Y</p>
-        <!-- Save settings mode 2 -->
         <div class="save-box">
           <div class="save-box-title"><span>💾</span> ตั้งชื่อไฟล์ที่บันทึก</div>
           <div class="input-group">
             <label>ชื่อไฟล์ผลลัพธ์</label>
-            <div class="input-suffix-wrap">
-              <input type="text" id="s2-name" placeholder="range_pages">
-              <span class="input-suffix">.pdf</span>
-            </div>
+            <div class="input-suffix-wrap"><input type="text" id="s2-name" placeholder="range_pages"><span class="input-suffix">.pdf</span></div>
           </div>
-          <p class="input-hint">💡 ถ้าไม่ตั้งชื่อ จะใช้ชื่ออัตโนมัติเช่น <span id="s2-auto-preview">filename_p1-10.pdf</span></p>
-          <div class="dl-note">
-            <span class="dl-note-icon">📁</span>
-            <div>บันทึกไปที่โฟลเดอร์ Downloads ของเบราว์เซอร์ ต้องการเลือกที่บันทึกเอง ให้เปิด <b>การตั้งค่า → ดาวน์โหลด → ถามตำแหน่งบันทึกทุกครั้ง</b></div>
-          </div>
+          <p class="input-hint">💡 ชื่ออัตโนมัติ: <span id="s2-auto-preview">filename_p1-10.pdf</span></p>
+          <div class="dl-note"><span class="dl-note-icon">📁</span><div>บันทึกที่โฟลเดอร์ Downloads เปิด <b>การตั้งค่า → ดาวน์โหลด → ถามตำแหน่งบันทึกทุกครั้ง</b> เพื่อเลือกที่บันทึกเอง</div></div>
         </div>
       </div>
-
     </div>
-
     <div class="prog-wrap" id="split-prog"><div class="prog-fill" id="split-prog-fill"></div></div>
     <div class="status" id="split-status"></div>
     <button class="action-btn" id="split-btn" onclick="doSplit()" disabled style="display:none">แยก PDF</button>
   </div>
 
+  <!-- ══════════════ COMPRESS ══════════════ -->
+  <div class="panel" id="panel-compress">
+    <div class="dropzone" id="cmp-dropzone">
+      <input type="file" id="cmp-input" accept=".pdf">
+      <span class="drop-icon">📦</span>
+      <div class="drop-label">คลิกหรือลากไฟล์ PDF มาวาง</div>
+      <div class="drop-sub">เลือก 1 ไฟล์ · เหมาะกับ PDF ที่มีรูปภาพ</div>
+    </div>
+
+    <div id="cmp-file-info" style="display:none">
+      <div class="file-list">
+        <div class="file-item">
+          <span style="font-size:22px;flex-shrink:0">📄</span>
+          <span class="file-name" id="cmp-fname">—</span>
+          <span class="file-meta" id="cmp-fsize">—</span>
+          <span class="page-badge" id="cmp-fpages">— หน้า</span>
+          <button class="remove-btn" onclick="clearCompress()">×</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="cmp-options" style="display:none;flex-direction:column;gap:20px">
+
+      <div>
+        <p class="sec-label" style="margin-bottom:10px">ระดับการย่อขนาด</p>
+        <div class="compress-levels">
+
+          <button class="level-btn" onclick="pickLevel(0,this)">
+            <span class="level-dot"></span>
+            <div class="level-info">
+              <span class="level-name">🟢 คุณภาพสูง (ย่อน้อย)</span>
+              <span class="level-desc">ความละเอียด 150 DPI · JPEG 85% · เหมาะกับงานพิมพ์</span>
+            </div>
+            <span class="level-badge badge-low">~20–40%</span>
+          </button>
+
+          <button class="level-btn active" onclick="pickLevel(1,this)">
+            <span class="level-dot"></span>
+            <div class="level-info">
+              <span class="level-name">🟡 สมดุล (แนะนำ)</span>
+              <span class="level-desc">ความละเอียด 96 DPI · JPEG 72% · ใช้งานออนไลน์ได้ดี</span>
+            </div>
+            <span class="level-badge badge-mid">~50–70%</span>
+          </button>
+
+          <button class="level-btn" onclick="pickLevel(2,this)">
+            <span class="level-dot"></span>
+            <div class="level-info">
+              <span class="level-name">🔴 เล็กสุด (ย่อมาก)</span>
+              <span class="level-desc">ความละเอียด 72 DPI · JPEG 50% · ขนาดเล็กมาก คุณภาพต่ำลง</span>
+            </div>
+            <span class="level-badge badge-hi">~70–90%</span>
+          </button>
+
+        </div>
+        <p class="input-hint" style="margin-top:8px">⚠️ % การย่อขึ้นอยู่กับเนื้อหาของ PDF — ไฟล์ text ล้วนย่อได้น้อยกว่าไฟล์รูปภาพ</p>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="save-box">
+        <div class="save-box-title"><span>💾</span> ตั้งชื่อไฟล์ที่บันทึก</div>
+        <div class="input-group">
+          <label>ชื่อไฟล์ผลลัพธ์</label>
+          <div class="input-suffix-wrap">
+            <input type="text" id="cmp-outname" placeholder="compressed">
+            <span class="input-suffix">.pdf</span>
+          </div>
+          <p class="input-hint">💡 ถ้าไม่ตั้งชื่อ จะใช้ชื่อเดิม + <b>_compressed</b></p>
+        </div>
+        <div class="dl-note">
+          <span class="dl-note-icon">📁</span>
+          <div>บันทึกที่โฟลเดอร์ Downloads ของเบราว์เซอร์ เปิด <b>การตั้งค่า → ดาวน์โหลด → ถามตำแหน่งบันทึกทุกครั้ง</b> เพื่อเลือกที่บันทึกเอง</div>
+        </div>
+      </div>
+
+    </div>
+
+    <p class="prog-label" id="cmp-prog-label">กำลังประมวลผล...</p>
+    <div class="prog-wrap" id="cmp-prog"><div class="prog-fill" id="cmp-prog-fill"></div></div>
+
+    <div class="size-compare" id="cmp-compare">
+      <div class="size-row">
+        <span class="size-label">ขนาดเดิม</span>
+        <span class="size-val" id="cmp-orig-size">—</span>
+      </div>
+      <div class="size-row">
+        <span class="size-label">ขนาดใหม่</span>
+        <span class="size-val green" id="cmp-new-size">—</span>
+      </div>
+      <div class="size-bar-wrap">
+        <div class="size-bar-fill" id="cmp-bar" style="width:100%"></div>
+      </div>
+      <div class="size-row">
+        <span class="size-label">ย่อได้</span>
+        <span class="size-val green" id="cmp-saved">—</span>
+      </div>
+    </div>
+
+    <div class="status" id="cmp-status"></div>
+    <button class="action-btn" id="cmp-btn" onclick="doCompress()" disabled style="display:none">ย่อขนาด PDF</button>
+  </div>
+
+  <!-- ══════════════ DELETE PAGES ══════════════ -->
+  <div class="panel" id="panel-delete">
+
+    <!-- How-to box -->
+    <div style="background:#f0f8ff;border:1.5px solid var(--border-strong);border-radius:var(--radius);padding:18px 20px;display:flex;flex-direction:column;gap:10px">
+      <div style="font-size:15px;font-weight:600;color:var(--blue-dark);display:flex;align-items:center;gap:8px">
+        <span>📖</span> วิธีใช้งาน
+      </div>
+      <div style="font-size:14px;color:var(--text-mid);line-height:1.9;display:flex;flex-direction:column;gap:4px">
+        <div>1️⃣ &nbsp;เลือกไฟล์ PDF ที่ต้องการตัดหน้า</div>
+        <div>2️⃣ &nbsp;ระบุหน้าที่ต้องการ<b>ลบออก</b> คั่นด้วยเครื่องหมาย <code style="background:#e0edff;padding:1px 6px;border-radius:4px;font-family:'IBM Plex Mono',monospace">,</code></div>
+        <div>3️⃣ &nbsp;ตั้งชื่อไฟล์ผลลัพธ์ แล้วกด <b>ตัดหน้าและบันทึก</b></div>
+      </div>
+      <div style="background:#fff8e0;border-radius:8px;padding:10px 14px;font-size:13px;color:#7a5300;line-height:1.7">
+        <b>ตัวอย่าง:</b><br>
+        ใส่ <code style="background:#ffeeba;padding:1px 5px;border-radius:3px;font-family:'IBM Plex Mono',monospace">1, 3, 5</code> → ลบหน้า 1, 3 และ 5 ออก เหลือหน้าที่เหลือทั้งหมด<br>
+        ใส่ <code style="background:#ffeeba;padding:1px 5px;border-radius:3px;font-family:'IBM Plex Mono',monospace">2, 4, 7, 10</code> → ลบหน้า 2, 4, 7 และ 10 ออก<br>
+        <span style="color:#b05a00">⚠️ หน้าที่ระบุจะถูก<u>ลบออกถาวร</u>จากไฟล์ใหม่ — ไฟล์ต้นฉบับยังอยู่ครบ</span>
+      </div>
+    </div>
+
+    <!-- Drop zone -->
+    <div class="dropzone" id="del-dropzone">
+      <input type="file" id="del-input" accept=".pdf">
+      <span class="drop-icon">📄</span>
+      <div class="drop-label">คลิกหรือลากไฟล์ PDF มาวาง</div>
+      <div class="drop-sub">เลือก 1 ไฟล์</div>
+    </div>
+
+    <!-- File info -->
+    <div id="del-file-info" style="display:none">
+      <div class="file-list">
+        <div class="file-item">
+          <span style="font-size:22px;flex-shrink:0">📄</span>
+          <span class="file-name" id="del-fname">—</span>
+          <span class="file-meta" id="del-fsize">—</span>
+          <span class="page-badge" id="del-fpages">— หน้า</span>
+          <button class="remove-btn" onclick="clearDelete()">×</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Options -->
+    <div id="del-options" style="display:none;flex-direction:column;gap:16px">
+
+      <div class="input-group">
+        <label>หน้าที่ต้องการ<span style="color:var(--red);font-weight:700">ลบออก</span></label>
+        <input type="text" id="del-pages" placeholder="เช่น  1, 3, 5, 10">
+        <p class="input-hint">คั่นแต่ละหน้าด้วยเครื่องหมาย <b>,</b> &nbsp;·&nbsp; หน้าที่ระบุจะหายออกจากไฟล์ผลลัพธ์</p>
+      </div>
+
+      <!-- Preview box -->
+      <div id="del-preview-box" style="display:none;background:#fff0f0;border:1.5px solid #ffb3b3;border-radius:10px;padding:14px 16px;font-size:13px;color:#6b0000;line-height:1.8">
+        <b style="font-size:14px">🗑️ จะลบหน้า:</b> <span id="del-preview-pages" style="font-family:'IBM Plex Mono',monospace;color:var(--red)">—</span><br>
+        <b>📄 หน้าที่เหลือ:</b> <span id="del-preview-remain" style="font-family:'IBM Plex Mono',monospace;color:var(--green)">—</span> หน้า
+      </div>
+
+      <div class="save-box">
+        <div class="save-box-title"><span>💾</span> ตั้งชื่อไฟล์ที่บันทึก</div>
+        <div class="input-group">
+          <label>ชื่อไฟล์ผลลัพธ์</label>
+          <div class="input-suffix-wrap">
+            <input type="text" id="del-outname" placeholder="deleted_pages">
+            <span class="input-suffix">.pdf</span>
+          </div>
+          <p class="input-hint">💡 ถ้าไม่ตั้งชื่อ จะใช้ชื่อเดิม + <b>_edited</b></p>
+        </div>
+        <div class="dl-note">
+          <span class="dl-note-icon">📁</span>
+          <div>บันทึกที่โฟลเดอร์ Downloads ของเบราว์เซอร์ เปิด <b>การตั้งค่า → ดาวน์โหลด → ถามตำแหน่งบันทึกทุกครั้ง</b> เพื่อเลือกที่บันทึกเอง</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="prog-wrap" id="del-prog"><div class="prog-fill" id="del-prog-fill"></div></div>
+    <div class="status" id="del-status"></div>
+    <button class="action-btn" id="del-btn" onclick="doDelete()" disabled style="display:none">🗑️ ตัดหน้าและบันทึก</button>
+  </div>
+
 </div>
 <script>
+pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 const {PDFDocument}=PDFLib;
 const MAX=500*1024*1024;
+
+// ── level config ──
+const LEVELS=[
+  {scale:150/72, quality:0.85},
+  {scale:96/72,  quality:0.72},
+  {scale:72/72,  quality:0.50},
+];
+let cmpLevel=1;
+
 let mergeFiles=[];
 let splitFile=null,splitPages=0,splitMode=0,splitBaseName='file';
+let cmpFile=null,cmpBaseName='file';
 
+// ── Tab ──
 function switchTab(t){
-  document.querySelectorAll('.tab-btn').forEach((b,i)=>b.classList.toggle('active',(i===0&&t==='merge')||(i===1&&t==='split')));
-  document.getElementById('panel-merge').classList.toggle('active',t==='merge');
-  document.getElementById('panel-split').classList.toggle('active',t==='split');
+  const ids=['merge','split','delete','compress'];
+  document.querySelectorAll('.tab-btn').forEach((b,i)=>b.classList.toggle('active',ids[i]===t));
+  ids.forEach(id=>document.getElementById('panel-'+id).classList.toggle('active',id===t));
 }
 
 function fmt(b){if(b<1048576)return(b/1024).toFixed(1)+' KB';return(b/1048576).toFixed(1)+' MB'}
 function clean(name,fallback){const v=(name||'').trim().replace(/\.pdf$/i,'').replace(/[\\/:*?"<>|]/g,'_');return v||fallback}
-
 function setStatus(id,cls,msg){const e=document.getElementById(id);e.className='status '+cls;e.textContent=msg}
-function setProgress(id,pct){
-  const w=document.getElementById(id);const f=document.getElementById(id+'-fill');
-  w.classList.toggle('show',pct>0&&pct<100);f.style.width=pct+'%';
+function setProgress(id,pct,label){
+  const w=document.getElementById(id+'-prog');
+  const f=document.getElementById(id+'-prog-fill');
+  const lbl=document.getElementById(id+'-prog-label');
+  w.classList.toggle('show',pct>0&&pct<100);
+  f.style.width=pct+'%';
+  if(lbl){lbl.className='prog-label'+(pct>0&&pct<100?' show':'');if(label)lbl.textContent=label;}
 }
 function dl(bytes,name){
   const a=document.createElement('a');
@@ -357,10 +520,12 @@ function setupDrop(id,fn){
 }
 setupDrop('merge-dropzone',fs=>addMerge(fs));
 setupDrop('split-dropzone',fs=>setSplit(fs[0]));
+setupDrop('cmp-dropzone',fs=>setCmp(fs[0]));
 document.getElementById('merge-input').addEventListener('change',e=>{addMerge([...e.target.files]);e.target.value=''});
 document.getElementById('split-input').addEventListener('change',e=>{setSplit(e.target.files[0]);e.target.value=''});
+document.getElementById('cmp-input').addEventListener('change',e=>{setCmp(e.target.files[0]);e.target.value=''});
 
-// update auto-preview for mode 2
+// ── Mode2 preview ──
 function updateMode2Preview(){
   const from=document.getElementById('s-from').value||'X';
   const to=document.getElementById('s-to').value||'Y';
@@ -369,7 +534,7 @@ function updateMode2Preview(){
 document.getElementById('s-from').addEventListener('input',updateMode2Preview);
 document.getElementById('s-to').addEventListener('input',updateMode2Preview);
 
-// ─── MERGE ───────────────────────────────────────────
+// ══════════ MERGE ══════════
 function addMerge(files){
   for(const f of files){
     if(f.size>MAX){setStatus('merge-status','err',`"${f.name}" เกิน 500 MB`);return}
@@ -383,11 +548,9 @@ function renderMerge(){
   const wrap=document.getElementById('merge-list-wrap');
   const hint=document.getElementById('merge-hint');
   const saveBox=document.getElementById('merge-save-box');
-  const btn=document.getElementById('merge-btn');
-  btn.disabled=mergeFiles.length<2;
+  document.getElementById('merge-btn').disabled=mergeFiles.length<2;
   if(!mergeFiles.length){wrap.style.display='none';saveBox.style.display='none';return}
-  wrap.style.display='block';
-  saveBox.style.display='flex';
+  wrap.style.display='block';saveBox.style.display='flex';
   hint.style.display=mergeFiles.length>1?'block':'none';
   list.innerHTML=mergeFiles.map((f,i)=>`
     <div class="file-item" draggable="true" data-i="${i}"
@@ -407,34 +570,32 @@ function dropItem(e,i){
   e.preventDefault();if(dragSrc===null||dragSrc===i)return;
   const[m]=mergeFiles.splice(dragSrc,1);mergeFiles.splice(i,0,m);dragSrc=null;renderMerge();
 }
-
 async function doMerge(){
   if(mergeFiles.length<2){setStatus('merge-status','err','ต้องการอย่างน้อย 2 ไฟล์');return}
   const outName=clean(document.getElementById('merge-outname').value,'merged');
   const btn=document.getElementById('merge-btn');btn.disabled=true;
-  setStatus('merge-status','info','กำลังรวมไฟล์...');setProgress('merge-prog',10);
+  setStatus('merge-status','info','กำลังรวมไฟล์...');setProgress('merge',10);
   try{
     const merged=await PDFDocument.create();
     for(let i=0;i<mergeFiles.length;i++){
       const doc=await PDFDocument.load(await mergeFiles[i].arrayBuffer());
       const ps=await merged.copyPages(doc,doc.getPageIndices());
       ps.forEach(p=>merged.addPage(p));
-      setProgress('merge-prog',10+Math.round(80*(i+1)/mergeFiles.length));
+      setProgress('merge',10+Math.round(80*(i+1)/mergeFiles.length));
     }
     const out=await merged.save();
-    setProgress('merge-prog',100);
+    setProgress('merge',100);
     dl(out,outName);
     setStatus('merge-status','ok',`✅ สำเร็จ รวม ${mergeFiles.length} ไฟล์ → ${outName}.pdf`);
   }catch(err){setStatus('merge-status','err','❌ '+err.message)}
-  btn.disabled=false;setTimeout(()=>setProgress('merge-prog',0),1200);
+  btn.disabled=false;setTimeout(()=>setProgress('merge',0),1200);
 }
 
-// ─── SPLIT ───────────────────────────────────────────
+// ══════════ SPLIT ══════════
 async function setSplit(f){
   if(!f)return;
   if(f.size>MAX){setStatus('split-status','err','ไฟล์เกิน 500 MB');return}
-  splitFile=f;
-  splitBaseName=f.name.replace(/\.pdf$/i,'');
+  splitFile=f;splitBaseName=f.name.replace(/\.pdf$/i,'');
   const doc=await PDFDocument.load(await f.arrayBuffer());
   splitPages=doc.getPageCount();
   document.getElementById('split-fname').textContent=f.name;
@@ -446,7 +607,6 @@ async function setSplit(f){
   document.getElementById('split-btn').disabled=false;
   document.getElementById('split-dropzone').style.display='none';
   document.getElementById('split-status').className='status';
-  // pre-fill defaults
   document.getElementById('s0-name1').value=splitBaseName+'_part1';
   document.getElementById('s0-name2').value=splitBaseName+'_part2';
   document.getElementById('s-at').max=splitPages-1;
@@ -469,18 +629,16 @@ function pickMode(m,btn){
   btn.classList.add('active');
   for(let i=0;i<3;i++)document.getElementById('sa-'+i).classList.toggle('show',i===m);
 }
-
 async function doSplit(){
   if(!splitFile)return;
   const btn=document.getElementById('split-btn');btn.disabled=true;
-  setProgress('split-prog',20);
+  setProgress('split',20);
   try{
     const src=await PDFDocument.load(await splitFile.arrayBuffer());
     const total=src.getPageCount();
-
     if(splitMode===0){
       const at=parseInt(document.getElementById('s-at').value);
-      if(!at||at<1||at>=total){setStatus('split-status','err',`ระบุหน้าระหว่าง 1 ถึง ${total-1}`);btn.disabled=false;setProgress('split-prog',0);return}
+      if(!at||at<1||at>=total){setStatus('split-status','err',`ระบุหน้าระหว่าง 1 ถึง ${total-1}`);btn.disabled=false;setProgress('split',0);return}
       const n1=clean(document.getElementById('s0-name1').value,splitBaseName+'_part1');
       const n2=clean(document.getElementById('s0-name2').value,splitBaseName+'_part2');
       setStatus('split-status','info','กำลังแยก...');
@@ -488,46 +646,233 @@ async function doSplit(){
       (await d1.copyPages(src,[...Array(at).keys()])).forEach(p=>d1.addPage(p));
       const d2=await PDFDocument.create();
       (await d2.copyPages(src,[...Array(total-at).keys()].map(i=>i+at))).forEach(p=>d2.addPage(p));
-      setProgress('split-prog',90);
+      setProgress('split',90);
       dl(await d1.save(),n1);
       setTimeout(async()=>dl(await d2.save(),n2),600);
-      setStatus('split-status','ok',`✅ ดาวน์โหลด 2 ไฟล์\n→ ${n1}.pdf (หน้า 1-${at})\n→ ${n2}.pdf (หน้า ${at+1}-${total})`);
-
+      setStatus('split-status','ok',`✅ ดาวน์โหลด 2 ไฟล์\n→ ${n1}.pdf (หน้า 1–${at})\n→ ${n2}.pdf (หน้า ${at+1}–${total})`);
     }else if(splitMode===1){
       const str=document.getElementById('s-list').value;
       const idx=[];
       for(const p of str.split(',').map(s=>s.trim()).filter(Boolean)){
         const n=parseInt(p);
-        if(isNaN(n)||n<1||n>total){setStatus('split-status','err',`เลขหน้าไม่ถูกต้อง (1-${total})`);btn.disabled=false;setProgress('split-prog',0);return}
+        if(isNaN(n)||n<1||n>total){setStatus('split-status','err',`เลขหน้าไม่ถูกต้อง (1-${total})`);btn.disabled=false;setProgress('split',0);return}
         idx.push(n-1);
       }
-      if(!idx.length){setStatus('split-status','err','ระบุหน้าด้วย');btn.disabled=false;setProgress('split-prog',0);return}
+      if(!idx.length){setStatus('split-status','err','ระบุหน้าด้วย');btn.disabled=false;setProgress('split',0);return}
       const sorted=[...new Set(idx)].sort((a,b)=>a-b);
       const autoName=splitBaseName+'_p'+sorted.map(i=>i+1).join('-');
       const outName=clean(document.getElementById('s1-name').value,autoName);
       setStatus('split-status','info','กำลังแยก...');
       const nd=await PDFDocument.create();
       (await nd.copyPages(src,sorted)).forEach(p=>nd.addPage(p));
-      setProgress('split-prog',90);
-      dl(await nd.save(),outName);
-      setStatus('split-status','ok',`✅ สำเร็จ ได้หน้า: ${sorted.map(i=>i+1).join(', ')} (${sorted.length} หน้า)\n→ ${outName}.pdf`);
-
+      setProgress('split',90);dl(await nd.save(),outName);
+      setStatus('split-status','ok',`✅ ได้หน้า: ${sorted.map(i=>i+1).join(', ')} (${sorted.length} หน้า)\n→ ${outName}.pdf`);
     }else{
       const from=parseInt(document.getElementById('s-from').value);
       const to=parseInt(document.getElementById('s-to').value);
-      if(!from||!to||from<1||to>total||from>to){setStatus('split-status','err',`X และ Y ต้องอยู่ระหว่าง 1-${total} และ X ≤ Y`);btn.disabled=false;setProgress('split-prog',0);return}
+      if(!from||!to||from<1||to>total||from>to){setStatus('split-status','err',`X และ Y ต้องอยู่ระหว่าง 1-${total} และ X ≤ Y`);btn.disabled=false;setProgress('split',0);return}
       const autoName=splitBaseName+`_p${from}-${to}`;
       const outName=clean(document.getElementById('s2-name').value,autoName);
       setStatus('split-status','info','กำลังแยก...');
       const nd=await PDFDocument.create();
       (await nd.copyPages(src,[...Array(to-from+1).keys()].map(i=>i+from-1))).forEach(p=>nd.addPage(p));
-      setProgress('split-prog',90);
-      dl(await nd.save(),outName);
-      setStatus('split-status','ok',`✅ สำเร็จ หน้า ${from} ถึง ${to} (${to-from+1} หน้า)\n→ ${outName}.pdf`);
+      setProgress('split',90);dl(await nd.save(),outName);
+      setStatus('split-status','ok',`✅ หน้า ${from}–${to} (${to-from+1} หน้า)\n→ ${outName}.pdf`);
     }
-    setProgress('split-prog',100);
+    setProgress('split',100);
   }catch(err){setStatus('split-status','err','❌ '+err.message)}
-  btn.disabled=false;setTimeout(()=>setProgress('split-prog',0),1500);
+  btn.disabled=false;setTimeout(()=>setProgress('split',0),1500);
+}
+
+// ══════════ COMPRESS ══════════
+function pickLevel(l,btn){
+  cmpLevel=l;
+  document.querySelectorAll('.level-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+async function setCmp(f){
+  if(!f)return;
+  if(f.size>MAX){setStatus('cmp-status','err','ไฟล์เกิน 500 MB');return}
+  cmpFile=f;cmpBaseName=f.name.replace(/\.pdf$/i,'');
+  const doc=await PDFDocument.load(await f.arrayBuffer());
+  const pages=doc.getPageCount();
+  document.getElementById('cmp-fname').textContent=f.name;
+  document.getElementById('cmp-fsize').textContent=fmt(f.size);
+  document.getElementById('cmp-fpages').textContent=pages+' หน้า';
+  document.getElementById('cmp-file-info').style.display='block';
+  document.getElementById('cmp-options').style.display='flex';
+  document.getElementById('cmp-btn').style.display='block';
+  document.getElementById('cmp-btn').disabled=false;
+  document.getElementById('cmp-dropzone').style.display='none';
+  document.getElementById('cmp-status').className='status';
+  document.getElementById('cmp-compare').className='size-compare';
+  document.getElementById('cmp-outname').value=cmpBaseName+'_compressed';
+}
+function clearCompress(){
+  cmpFile=null;
+  document.getElementById('cmp-file-info').style.display='none';
+  document.getElementById('cmp-options').style.display='none';
+  document.getElementById('cmp-btn').style.display='none';
+  document.getElementById('cmp-dropzone').style.display='block';
+  document.getElementById('cmp-status').className='status';
+  document.getElementById('cmp-compare').className='size-compare';
+}
+
+async function doCompress(){
+  if(!cmpFile)return;
+  const btn=document.getElementById('cmp-btn');btn.disabled=true;
+  document.getElementById('cmp-compare').className='size-compare';
+  document.getElementById('cmp-status').className='status';
+
+  const {scale,quality}=LEVELS[cmpLevel];
+  const outName=clean(document.getElementById('cmp-outname').value,cmpBaseName+'_compressed');
+  const origSize=cmpFile.size;
+
+  try{
+    const pdfBytes=await cmpFile.arrayBuffer();
+    const pdfJsDoc=await pdfjsLib.getDocument({data:pdfBytes.slice(0)}).promise;
+    const totalPages=pdfJsDoc.numPages;
+    const newDoc=await PDFDocument.create();
+
+    for(let i=1;i<=totalPages;i++){
+      setProgress('cmp',Math.round((i/totalPages)*90),`กำลังประมวลผลหน้า ${i} / ${totalPages}`);
+
+      const page=await pdfJsDoc.getPage(i);
+      const vp=page.getViewport({scale});
+      const canvas=document.createElement('canvas');
+      canvas.width=Math.round(vp.width);
+      canvas.height=Math.round(vp.height);
+      const ctx=canvas.getContext('2d');
+      await page.render({canvasContext:ctx,viewport:vp}).promise;
+
+      const imgDataUrl=canvas.toDataURL('image/jpeg',quality);
+      const imgB64=imgDataUrl.split(',')[1];
+      const imgBytes=Uint8Array.from(atob(imgB64),c=>c.charCodeAt(0));
+      const jpgImg=await newDoc.embedJpg(imgBytes);
+      const newPage=newDoc.addPage([vp.width,vp.height]);
+      newPage.drawImage(jpgImg,{x:0,y:0,width:vp.width,height:vp.height});
+    }
+
+    setProgress('cmp',95,'กำลังบันทึก...');
+    const outBytes=await newDoc.save();
+    setProgress('cmp',100);
+
+    // Show size comparison
+    const newSize=outBytes.byteLength;
+    const saved=origSize-newSize;
+    const pct=Math.max(0,Math.round((saved/origSize)*100));
+    document.getElementById('cmp-orig-size').textContent=fmt(origSize);
+    document.getElementById('cmp-new-size').textContent=fmt(newSize);
+    document.getElementById('cmp-saved').textContent=`${fmt(saved)} (${pct}%)`;
+    document.getElementById('cmp-bar').style.width=Math.max(5,(100-pct))+'%';
+    document.getElementById('cmp-compare').className='size-compare show';
+
+    dl(outBytes,outName);
+    setStatus('cmp-status','ok',`✅ สำเร็จ · ย่อได้ ${pct}% → ${outName}.pdf`);
+
+  }catch(err){
+    setStatus('cmp-status','err','❌ '+err.message);
+    console.error(err);
+  }
+  btn.disabled=false;
+  setTimeout(()=>setProgress('cmp',0),1500);
+}
+
+// ══════════ DELETE PAGES ══════════
+let delFile=null,delTotalPages=0,delBaseName='file';
+
+setupDrop('del-dropzone',fs=>setDelFile(fs[0]));
+document.getElementById('del-input').addEventListener('change',e=>{setDelFile(e.target.files[0]);e.target.value=''});
+
+// live preview as user types page numbers
+document.getElementById('del-pages').addEventListener('input',updateDelPreview);
+
+async function setDelFile(f){
+  if(!f)return;
+  if(f.size>MAX){setStatus('del-status','err','ไฟล์เกิน 500 MB');return}
+  delFile=f;delBaseName=f.name.replace(/\.pdf$/i,'');
+  const doc=await PDFDocument.load(await f.arrayBuffer());
+  delTotalPages=doc.getPageCount();
+  document.getElementById('del-fname').textContent=f.name;
+  document.getElementById('del-fsize').textContent=fmt(f.size);
+  document.getElementById('del-fpages').textContent=delTotalPages+' หน้า';
+  document.getElementById('del-file-info').style.display='block';
+  document.getElementById('del-options').style.display='flex';
+  document.getElementById('del-btn').style.display='block';
+  document.getElementById('del-btn').disabled=false;
+  document.getElementById('del-dropzone').style.display='none';
+  document.getElementById('del-status').className='status';
+  document.getElementById('del-outname').value=delBaseName+'_edited';
+  document.getElementById('del-pages').value='';
+  document.getElementById('del-preview-box').style.display='none';
+}
+function clearDelete(){
+  delFile=null;delTotalPages=0;
+  document.getElementById('del-file-info').style.display='none';
+  document.getElementById('del-options').style.display='none';
+  document.getElementById('del-btn').style.display='none';
+  document.getElementById('del-dropzone').style.display='block';
+  document.getElementById('del-status').className='status';
+  document.getElementById('del-preview-box').style.display='none';
+}
+
+function parseDelPages(str,total){
+  const set=new Set();
+  for(const p of str.split(',').map(s=>s.trim()).filter(Boolean)){
+    const n=parseInt(p);
+    if(isNaN(n)||n<1||n>total)return null;
+    set.add(n);
+  }
+  return set;
+}
+
+function updateDelPreview(){
+  const str=document.getElementById('del-pages').value;
+  if(!str.trim()||!delTotalPages){document.getElementById('del-preview-box').style.display='none';return}
+  const toDelete=parseDelPages(str,delTotalPages);
+  if(!toDelete){document.getElementById('del-preview-box').style.display='none';return}
+  const remaining=delTotalPages-toDelete.size;
+  const sortedDel=[...toDelete].sort((a,b)=>a-b);
+  document.getElementById('del-preview-pages').textContent='หน้า '+sortedDel.join(', ')+` (${toDelete.size} หน้า)`;
+  document.getElementById('del-preview-remain').textContent=remaining;
+  document.getElementById('del-preview-box').style.display='block';
+}
+
+async function doDelete(){
+  if(!delFile)return;
+  const str=document.getElementById('del-pages').value;
+  if(!str.trim()){setStatus('del-status','err','ระบุหน้าที่ต้องการลบด้วย');return}
+  const toDelete=parseDelPages(str,delTotalPages);
+  if(!toDelete){setStatus('del-status','err',`เลขหน้าไม่ถูกต้อง — ต้องอยู่ระหว่าง 1 ถึง ${delTotalPages}`);return}
+  if(toDelete.size>=delTotalPages){setStatus('del-status','err','ไม่สามารถลบทุกหน้าได้ — ต้องเหลืออย่างน้อย 1 หน้า');return}
+
+  const outName=clean(document.getElementById('del-outname').value,delBaseName+'_edited');
+  const btn=document.getElementById('del-btn');btn.disabled=true;
+  setStatus('del-status','info','กำลังประมวลผล...');setProgress('del',20);
+
+  try{
+    const src=await PDFDocument.load(await delFile.arrayBuffer());
+    const total=src.getPageCount();
+    // build keep indices (0-based)
+    const keepIdx=[];
+    for(let i=0;i<total;i++){if(!toDelete.has(i+1))keepIdx.push(i);}
+
+    const newDoc=await PDFDocument.create();
+    const pages=await newDoc.copyPages(src,keepIdx);
+    pages.forEach(p=>newDoc.addPage(p));
+    setProgress('del',80);
+    const out=await newDoc.save();
+    setProgress('del',100);
+    dl(out,outName);
+
+    const sortedDel=[...toDelete].sort((a,b)=>a-b);
+    setStatus('del-status','ok',
+      `✅ สำเร็จ · ลบหน้า ${sortedDel.join(', ')} ออก\n` +
+      `เหลือ ${keepIdx.length} หน้า → ${outName}.pdf`
+    );
+  }catch(err){setStatus('del-status','err','❌ '+err.message)}
+  btn.disabled=false;setTimeout(()=>setProgress('del',0),1500);
 }
 </script>
 </body>
