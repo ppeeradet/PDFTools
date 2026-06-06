@@ -406,8 +406,9 @@ input[type=number]::-webkit-inner-spin-button{opacity:0.4}
       </div>
       <div style="background:#fff8e0;border-radius:8px;padding:10px 14px;font-size:13px;color:#7a5300;line-height:1.7">
         <b>ตัวอย่าง:</b><br>
-        ใส่ <code style="background:#ffeeba;padding:1px 5px;border-radius:3px;font-family:'IBM Plex Mono',monospace">1, 3, 5</code> → ลบหน้า 1, 3 และ 5 ออก เหลือหน้าที่เหลือทั้งหมด<br>
-        ใส่ <code style="background:#ffeeba;padding:1px 5px;border-radius:3px;font-family:'IBM Plex Mono',monospace">2, 4, 7, 10</code> → ลบหน้า 2, 4, 7 และ 10 ออก<br>
+        ใส่ <code style="background:#ffeeba;padding:1px 5px;border-radius:3px;font-family:'IBM Plex Mono',monospace">1, 3, 5</code> → ลบหน้า 1, 3 และ 5<br>
+        ใส่ <code style="background:#ffeeba;padding:1px 5px;border-radius:3px;font-family:'IBM Plex Mono',monospace">1-3</code> → ลบหน้า 1, 2, 3 (ระบุเป็นช่วง)<br>
+        ใส่ <code style="background:#ffeeba;padding:1px 5px;border-radius:3px;font-family:'IBM Plex Mono',monospace">1-3, 7, 10-12</code> → ผสมช่วงกับหน้าเดี่ยวได้<br>
         <span style="color:#b05a00">⚠️ หน้าที่ระบุจะถูก<u>ลบออกถาวร</u>จากไฟล์ใหม่ — ไฟล์ต้นฉบับยังอยู่ครบ</span>
       </div>
     </div>
@@ -438,8 +439,8 @@ input[type=number]::-webkit-inner-spin-button{opacity:0.4}
 
       <div class="input-group">
         <label>หน้าที่ต้องการ<span style="color:var(--red);font-weight:700">ลบออก</span></label>
-        <input type="text" id="del-pages" placeholder="เช่น  1, 3, 5, 10">
-        <p class="input-hint">คั่นแต่ละหน้าด้วยเครื่องหมาย <b>,</b> &nbsp;·&nbsp; หน้าที่ระบุจะหายออกจากไฟล์ผลลัพธ์</p>
+        <input type="text" id="del-pages" placeholder="เช่น  1, 3, 5-8, 10">
+        <p class="input-hint">คั่นแต่ละหน้าด้วย <b>,</b> &nbsp;·&nbsp; ระบุช่วงด้วย <b>-</b> เช่น <b>1-3</b> คือหน้า 1, 2, 3 &nbsp;·&nbsp; ผสมกันได้ เช่น <b>1, 3, 5-8, 12</b></p>
       </div>
 
       <!-- Preview box -->
@@ -819,10 +820,16 @@ function clearDelete(){
 
 function parseDelPages(str,total){
   const set=new Set();
-  for(const p of str.split(',').map(s=>s.trim()).filter(Boolean)){
-    const n=parseInt(p);
-    if(isNaN(n)||n<1||n>total)return null;
-    set.add(n);
+  for(const part of str.split(',').map(s=>s.trim()).filter(Boolean)){
+    if(part.includes('-')){
+      const[a,b]=part.split('-').map(s=>parseInt(s.trim()));
+      if(isNaN(a)||isNaN(b)||a<1||b>total||a>b)return null;
+      for(let i=a;i<=b;i++)set.add(i);
+    }else{
+      const n=parseInt(part);
+      if(isNaN(n)||n<1||n>total)return null;
+      set.add(n);
+    }
   }
   return set;
 }
